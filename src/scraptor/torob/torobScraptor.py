@@ -1,23 +1,39 @@
+# frameworks:
 from playwright.sync_api import sync_playwright
+
+
+# moduals:
+from ..unsetProxy import unsetProxy
+
+
+# librarys:
+import time
 
 def run():
     with sync_playwright() as p:
         # Launch browser
-        browser = p.chromium.launch(headless=False)
+        browser = p.firefox.launch(
+            headless=False,
+            # proxy={"server": "direct://"},
+            # args=["--no-proxy-server"]
+        )
+
+
         
         # Create a new page
         page = browser.new_page()
+
+        unsetProxy(log=False)
+
+        page.set_default_timeout(60000) 
+
+
+        page.goto("https://torob.com")
+
+
+
         
-        # Your code here
-        print("Playwright initialized successfully!")
-        print(f"Browser: {browser.browser_type().name}")
-        
-        # Example: Navigate to a page
-        # page.goto('https://example.com')
-        
-        # Keep browser open for demonstration
-        input("Press Enter to close the browser...")
-        
+        time.sleep(10)        
         # Close browser
         browser.close()
 
