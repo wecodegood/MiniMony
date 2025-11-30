@@ -1,7 +1,8 @@
-def LoginToDeepSeek(evar, pvar, browser, page, url="https://chat.deepseek.com"):
+def LoginToDeepSeek(evar, pvar, page, url="https://chat.deepseek.com"):
     page.goto(url)
     page.get_by_placeholder("Phone number / email address").fill(evar)
     page.get_by_placeholder("Password").fill(pvar)
+    page.keyboard.press("Tab")
     page.keyboard.press("Tab")
     page.keyboard.press("Tab")
     page.keyboard.press("Tab")

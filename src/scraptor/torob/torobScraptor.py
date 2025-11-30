@@ -40,8 +40,8 @@ def run():
 
         search(page, "dell precision 5540", onlyStocks=True)
 
-
-        gottenads = getAds(page, 12)
+        page2 = browser.new_page()
+        gottenads = getAds(page, page2, 10, "your5dad6666@gmail.com", "yasin.11A")
 
         
 

@@ -2,11 +2,10 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from InitDAC import InitDAC
+from ai.AiAnalysor.Mods.Message import SendGetMessage
 
 
-def getAds(page, amount, email, password):
-    InitDAC()
+def getAds(page, page2, amount, email, password):
     
     # Find div where class starts with "browse_leftContainer__"
     div = page.locator('div[class^="browse_leftContainer__"]')
@@ -19,6 +18,12 @@ def getAds(page, amount, email, password):
     all_cards_html = ""
     for i in range(min(amount, cards.count())):
         all_cards_html += cards.nth(i).inner_html() + "\n\n"
+    
+    tempcards = SendGetMessage(all_cards_html, email, password, page) 
+
+    all_cards_html = tempcards
+    
+
 
     
     return all_cards_html

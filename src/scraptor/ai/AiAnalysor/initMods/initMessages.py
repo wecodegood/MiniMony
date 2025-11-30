@@ -8,7 +8,7 @@ def InitChatMessage(browser, page):
     page.keyboard.press("Enter")
 
 
-def customeInitMessage(browser, page, prompt):
+def customeInitMessage(page, prompt):
 
     page.get_by_placeholder("Message DeepSeek").fill(prompt)
 
