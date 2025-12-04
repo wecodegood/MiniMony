@@ -1,6 +1,6 @@
 def GetLastResponse(
     page,
-    max_wait_ms: int = 60000,
+    max_wait_ms: int = 10000000,
     stable_checks_required: int = 5,
     poll_interval_s: float = 0.2,
     min_start_chars: int = 5,
@@ -9,14 +9,15 @@ def GetLastResponse(
 ):
     import time
 
+
     # Wait for any message container to appear (initial 10s)
-    page.wait_for_selector(".ds-message", timeout=10000)
+    page.wait_for_selector(".ds-message", timeout=100000)
 
     last_text = ""
     stable_count = 0
     started = False
 
-    deadline = time.monotonic() + (max_wait_ms / 1000.0)
+    deadline = time.monotonic() + (max_wait_ms)
 
     while True:
         try:

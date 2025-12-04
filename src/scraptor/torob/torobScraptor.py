@@ -7,8 +7,10 @@ from playwright.sync_api import sync_playwright
 # librarys:
 import time
 import os
+import json 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 
 
@@ -36,12 +38,16 @@ def run():
 
         page.set_default_timeout(60000) 
 
+
         page.goto("https://torob.com")
 
-        search(page, "dell precision 5540", onlyStocks=True)
+        PRODUCT = "Dell precision 5540"
 
-        page2 = browser.new_page()
-        gottenads = getAds(page, page2, 10, "your5dad6666@gmail.com", "yasin.11A")
+
+        search(page, PRODUCT, onlyStocks=True)
+
+        # page2 = browser.new_page()
+        gottenads = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", PRODUCT)
 
         
 
@@ -49,7 +55,20 @@ def run():
         
         # time.sleep(200)
         browser.close()
-        print(gottenads)
+        # print(gottenads)
+
+
+        json_path = "../json/torob.json"
+        os.makedirs(os.path.dirname(json_path), exist_ok=True)
+
+        gottenads = json.loads(gottenads)
+
+        with open(json_path, "a") as f:
+            f.truncate(0)
+            json.dump(gottenads, f, indent=4, ensure_ascii=False)
+        
+
+        pass
 
 if __name__ == "__main__":
     run()
