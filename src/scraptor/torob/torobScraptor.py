@@ -10,7 +10,7 @@ import os
 import json 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+from ..PROD import PRODUCT
 
 
 
@@ -18,57 +18,61 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from unsetProxy import unsetProxy
 from search import search
 from cleanAds import getAds
+from setTimeout import setTimeoutTo
 
 
 
 
-unsetProxy(log=False)
-
-def run():
-    with sync_playwright() as p:
-        # Launch browser
-        browser = p.firefox.launch(
-            headless=False,
-            # proxy={"server": "direct://"},
-            # args=["--no-proxy-server"]
-        )
-        
-        # Create a new page
-        page = browser.new_page()
-
-        page.set_default_timeout(60000) 
+run = False
 
 
-        page.goto("https://torob.com")
+if run:
+    def run():
+        unsetProxy(log=False)
+        with sync_playwright() as p:
+            # Launch browser
+            browser = p.firefox.launch(
+                headless=False,
+                # proxy={"server": "direct://"},
+                # args=["--no-proxy-server"]
+            )
+            
+            # Create a new page
+            page = browser.new_page()
 
-        PRODUCT = "Dell precision 5540"
+            setTimeoutTo(page)
+
+            page.set_default_timeout(60000) 
 
 
-        search(page, PRODUCT, onlyStocks=True)
-
-        # page2 = browser.new_page()
-        gottenads = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", PRODUCT)
-
-        
+            page.goto("https://torob.com")
 
 
-        
-        # time.sleep(200)
-        browser.close()
-        # print(gottenads)
+            search(page, PRODUCT, onlyStocks=True)
+
+            # page2 = browser.new_page()
+            gottenads = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", PRODUCT)
+
+            
 
 
-        json_path = "../json/torob.json"
-        os.makedirs(os.path.dirname(json_path), exist_ok=True)
+            
+            # time.sleep(200)
+            browser.close()
+            # print(gottenads)
 
-        gottenads = json.loads(gottenads)
 
-        with open(json_path, "a") as f:
-            f.truncate(0)
-            json.dump(gottenads, f, indent=4, ensure_ascii=False)
-        
+            json_path = "../json/torob.json"
+            os.makedirs(os.path.dirname(json_path), exist_ok=True)
 
-        pass
+            gottenads = json.loads(gottenads)
+
+            with open(json_path, "a") as f:
+                f.truncate(0)
+                json.dump(gottenads, f, indent=4, ensure_ascii=False)
+            
+
+            pass
 
 if __name__ == "__main__":
     run()
