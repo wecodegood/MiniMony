@@ -11,7 +11,7 @@ import time
 run = False
 
 
-if run:
+if run == True:
     def run():
         with sync_playwright() as p:
             # Launch browser
@@ -26,5 +26,6 @@ if run:
             # Close browser
             browser.close()
 
-if __name__ == "__main__":
-    run()
+if run == True:
+    if __name__ == "__main__":
+        run()

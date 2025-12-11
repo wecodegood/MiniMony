@@ -10,7 +10,7 @@ import os
 import json 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ..PROD import PRODUCT
+from PROD import PRODUCT
 
 
 
@@ -23,7 +23,7 @@ from setTimeout import setTimeoutTo
 
 
 
-run = False
+run = True
 
 
 if run:
@@ -62,7 +62,7 @@ if run:
             # print(gottenads)
 
 
-            json_path = "../json/torob.json"
+            json_path = "json/torob.json"
             os.makedirs(os.path.dirname(json_path), exist_ok=True)
 
             gottenads = json.loads(gottenads)
@@ -73,6 +73,6 @@ if run:
             
 
             pass
-
-if __name__ == "__main__":
-    run()
+if run:
+    if __name__ == "__main__":
+        run()
