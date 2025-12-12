@@ -1,0 +1,87 @@
+html {
+    background-color: #A1BC98;
+    height: 100%;
+}
+
+* {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* This centers content horizontally */
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #778873;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%; /* Full width */
+}
+
+.logo {
+    font-size: 24px;
+    color: #fff; /* This will work now */
+    font-weight: bolder;
+    cursor: pointer;
+    transition: color 0.3s;
+    text-align: left; /* Reset text alignment */
+    user-select: none;
+    transition: all 0.3s ease;
+}
+
+
+.logo:hover {
+    transform: translateY(2px);
+}
+
+/* Navigation buttons */
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+    color: white;
+}
+
+.nav-btn {
+    padding: 10px 20px;
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bolder;
+    color: #fff; /* Explicitly set button text color */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center; /* Center text inside button */
+    letter-spacing: 1px;
+}
+
+.nav-btn:hover {
+    background-color: #D2DCB6;
+    color: black;
+    /* font-size: 20px; */
+    letter-spacing: 5px;
+    /* font-weight: bolder; */
+    border-color: black;
+}
+
+.nav-btn:active {
+    transform: translateY(5px);
+}
+
+/* Reset text alignment for other elements if needed */
+.navbar * {
+    text-align: left; /* Reset for navbar children */
+}

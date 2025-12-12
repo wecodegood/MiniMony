@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Title{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+
+<!-- ----------------------------- -->
+
+
+{% block content %}
+    <div class="centerDivHV">
+        <form action="" method="post" class="formToSatisfyStallin">
+            <input type="text" placeholder="نام کالا را وارد کنید">
+        </form>
+    </div>
+{% endblock %}
