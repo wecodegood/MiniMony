@@ -66,7 +66,7 @@
 }
 
 .result-card-inner {
-  background: #d2dcb6;
+  background: #f3f4f6;
   border-radius: 16px;
   padding: 12px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
@@ -81,7 +81,7 @@
 /* Hover transform is now controlled via JavaScript based on mouse position.
    We keep a subtle visual feedback on hover by only adjusting background and shadow. */
 .result-card:hover .result-card-inner {
-  background-color: #e5edd1;
+  background-color: #e5e7eb;
   box-shadow:
     0 18px 30px rgba(0, 0, 0, 0.25),
     0 10px 10px rgba(0, 0, 0, 0.18);
@@ -93,7 +93,7 @@
   padding-top: 65%;
   border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(135deg, #9ca3af, #6b7280);
+  background: linear-gradient(135deg, #4f46e5, #0ea5e9);
   margin-bottom: 10px;
 }
 
@@ -140,13 +140,13 @@
 .result-price {
   font-size: 14px;
   font-weight: 600;
-  color: #05400a;
+  color: #1d4ed8;
 }
 
 .result-price-unit {
   font-size: 12px;
   margin-right: 4px;
-  color: #065f46;
+  color: #0ea5e9;
 }
 
 .result-meta {
@@ -170,7 +170,7 @@
   padding: 6px 10px;
   border-radius: 999px;
   border: none;
-  background: #778873;
+  background: #4f46e5;
   color: #f9fafb;
   text-decoration: none;
   font-weight: 600;
@@ -182,7 +182,7 @@
 }
 
 .result-link-btn:hover {
-  background: #d2dcb6;
+  background: #e5e7eb;
   color: #111827;
   transform: translateY(-1px);
   box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4);

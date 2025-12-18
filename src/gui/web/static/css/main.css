@@ -1,5 +1,7 @@
 html {
-    background-color: #A1BC98;
+    background-color: #020617;
+    background-image: radial-gradient(circle at top, #1e293b 0, #020617 45%, #020617 100%);
+    color: #e5e7eb;
     height: 100%;
 }
 
@@ -11,7 +13,7 @@ html {
 }
 
 body {
-    margin: 0;
+    margin: 0px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -36,7 +38,7 @@ body {
     height: 56px;
     border-radius: 50%;
     border: 5px solid rgba(209, 213, 219, 0.7);
-    border-top-color: #1f2937;
+    border-top-color: #4f46e5;
     animation: spinner-rotate 0.9s linear infinite;
     margin-bottom: 12px;
 }
@@ -56,9 +58,12 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 30px;
-    background-color: #778873;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 18px 40px;
+    background-color: rgba(15, 23, 42, 0.96);
+    box-shadow:
+        0 18px 40px rgba(15, 23, 42, 0.65),
+        0 1px 0 rgba(148, 163, 184, 0.45);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.4);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -66,7 +71,7 @@ body {
 }
 
 .logo {
-    font-size: 24px;
+    font-size: 26px;
     color: #fff; /* This will work now */
     font-weight: bolder;
     cursor: pointer;
@@ -92,12 +97,12 @@ body {
 
 .nav-btn {
     padding: 10px 20px;
-    background: none;
-    border: 2px solid transparent;
+    background: transparent;
+    border: 1px solid rgba(148, 163, 184, 0.65);
     border-radius: 6px;
     font-size: 16px;
     font-weight: bolder;
-    color: #fff; /* Explicitly set button text color */
+    color: #e5e7eb; /* Explicitly set button text color */
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center; /* Center text inside button */
@@ -105,11 +110,13 @@ body {
 }
 
 .nav-btn:hover {
-    background-color: #D2DCB6;
-    color: #111827;
-    border-color: #000;
+    background-color: #4f46e5;
+    color: #f9fafb;
+    border-color: #4f46e5;
     transform: translateY(-2px);
-    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.6), 0 10px 18px rgba(0, 0, 0, 0.35);
+    box-shadow:
+        0 6px 0 rgba(15, 23, 42, 0.9),
+        0 14px 24px rgba(15, 23, 42, 0.75);
 }
 
 .nav-btn:active {

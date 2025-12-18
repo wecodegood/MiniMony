@@ -31,7 +31,7 @@ body {
 .circle-input-label {
   font-size: 18px;
   font-weight: 600;
-  color: #111827;
+  color: #ffffff;
   letter-spacing: 0.3px;
   
 }
@@ -41,7 +41,7 @@ body {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #000000;
+  background: #ffffff;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
   display: flex;
   align-items: center;
@@ -76,7 +76,7 @@ body {
 }
 
 .circle-input-field::placeholder {
-  color: #9ca3af;
+  color: #000000;
 }
 
 .circle-input-wrapper.expanded .circle-input-core {
@@ -84,7 +84,8 @@ body {
   max-width: 80vw;
   height: 60px;
   border-radius: 999px;
-  background: #050608;
+  background: #ffffff;
+  border: 2px solid #000000;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25);
   filter: saturate(0.45) brightness(1.03);
 }
@@ -100,6 +101,7 @@ body {
   opacity: 1;
   transform: translateY(0);
   text-align: center;
+  color: #000000;
 }
 
 @keyframes bluePulse {
