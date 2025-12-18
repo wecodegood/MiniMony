@@ -10,11 +10,101 @@
   <div class="search-results-page">
     <h2 class="search-title">نتایج برای: <span>{{ search_query }}</span></h2>
 
+    <p class="search-json-count">
+      تعداد فایل‌های JSON موجود در پوشه <code>json/</code>:
+      <strong>{{ json_count }}</strong>
+    </p>
+
     {% if error %}
       <p class="search-error">{{ error }}</p>
     {% endif %}
 
-    <h3 class="search-subtitle">JSON نتایج:</h3>
+    {% if cards %}
+      <h3 class="search-subtitle">کالاهای پیدا شده:</h3>
+      <div class="results-grid">
+        {% for card in cards %}
+          <article class="result-card">
+            <div class="result-card-inner">
+              <div class="result-image-wrapper">
+                {% if card.image %}
+                  <img
+                    src="{{ card.image }}"
+                    alt="{{ card.name }}"
+                    class="result-image"
+                    loading="lazy"
+                    onerror="this.style.display='none'; this.parentElement.querySelector('.no-image').style.display='flex';"
+                  >
+                  <div class="no-image">تصویری یافت نشد</div>
+                {% else %}
+                  <div class="no-image" style="display: flex;">تصویری یافت نشد</div>
+                {% endif %}
+              </div>
+
+              <div class="result-body">
+                <h4 class="result-title">{{ card.name }}</h4>
+
+                {% if card.price %}
+                  <p class="result-price">
+                    <span>{{ '{:,}'.format(card.price) }}</span>
+                    <span class="result-price-unit">تومان</span>
+                  </p>
+                {% endif %}
+
+                <div class="result-meta">
+                  <span class="result-source">
+                    منبع: {{ 'دیوار' if card.source == 'divar' else 'توروب' if card.source == 'torob' else card.source }}
+                  </span>
+
+                  {% if card.link %}
+                    <a href="{{ card.link }}" target="_blank" rel="noopener" class="result-link-btn">
+                      مشاهده در سایت
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <h3 class="search-subtitle">JSON نتایج (نمایش خام):</h3>
     <pre class="results-json">{{ results_json }}</pre>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const cards = document.querySelectorAll(".result-card");
+
+      cards.forEach((card) => {
+        const inner = card.querySelector(".result-card-inner");
+        if (!inner) return;
+
+        const maxRotate = 6; // gentler maximum tilt in degrees
+
+        card.addEventListener("mousemove", function (event) {
+          const rect = card.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+
+          const xRel = x / rect.width - 0.5;  // -0.5 (left) -> 0.5 (right)
+          const yRel = y / rect.height - 0.5; // -0.5 (top) -> 0.5 (bottom)
+
+          const rotateX = -yRel * maxRotate; // tilt towards cursor vertically
+          const rotateY = xRel * maxRotate;  // tilt towards cursor horizontally
+
+          inner.style.transform =
+            "translateY(-3px) rotateX(" +
+            rotateX.toFixed(2) +
+            "deg) rotateY(" +
+            rotateY.toFixed(2) +
+            "deg)";
+        });
+
+        card.addEventListener("mouseleave", function () {
+          inner.style.transform = "translateY(0) rotateX(0deg) rotateY(0deg)";
+        });
+      });
+    });
+  </script>
 {% endblock %}

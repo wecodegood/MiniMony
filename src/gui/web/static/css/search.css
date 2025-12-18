@@ -48,4 +48,149 @@
   white-space: pre;
 }
 
+.search-json-count {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  margin: 18px 0 24px;
+}
+
+.result-card {
+  perspective: 900px;
+}
+
+.result-card-inner {
+  background: #d2dcb6;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  transform-style: preserve-3d;
+  transform: translateY(0) rotateX(0deg) rotateY(0deg);
+  transition:
+    transform 0.18s ease-out,
+    box-shadow 0.18s ease-out,
+    background-color 0.18s ease-out;
+}
+
+/* Hover transform is now controlled via JavaScript based on mouse position.
+   We keep a subtle visual feedback on hover by only adjusting background and shadow. */
+.result-card:hover .result-card-inner {
+  background-color: #e5edd1;
+  box-shadow:
+    0 18px 30px rgba(0, 0, 0, 0.25),
+    0 10px 10px rgba(0, 0, 0, 0.18);
+}
+
+.result-image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 65%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #9ca3af, #6b7280);
+  margin-bottom: 10px;
+}
+
+.result-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.no-image {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  font-size: 13px;
+  color: #f9fafb;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.4),
+    rgba(0, 0, 0, 0.4) 6px,
+    rgba(0, 0, 0, 0.6) 6px,
+    rgba(0, 0, 0, 0.6) 12px
+  );
+}
+
+.result-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.result-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.result-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #05400a;
+}
+
+.result-price-unit {
+  font-size: 12px;
+  margin-right: 4px;
+  color: #065f46;
+}
+
+.result-meta {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.result-source {
+  font-size: 12px;
+  color: #374151;
+  background: rgba(17, 24, 39, 0.08);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.result-link-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: none;
+  background: #778873;
+  color: #f9fafb;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.result-link-btn:hover {
+  background: #d2dcb6;
+  color: #111827;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4);
+}
+
+.result-link-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
 
