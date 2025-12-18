@@ -6,46 +6,58 @@ import time
 import os
 import sys
 import json
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from PROD import PRODUCT
+
+# Make sure project root (src) is on sys.path so absolute imports work from anywhere
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+
+from scraptor.PROD import PRODUCT
 
 # modules:
-from unsetProxy import unsetProxy
-from setTimeout import setTimeoutTo
-from search import search
-from getAds import getAds
-from getCheapest import getCheapestAdd
+from scraptor.unsetProxy import unsetProxy
+from scraptor.setTimeout import setTimeoutTo
+from scraptor.divar.search import search
+from scraptor.divar.getAds import getAds
+from scraptor.divar.getCheapest import getCheapestAdd
 
-def run():
+def run(product: str | None = None):
+    """
+    Run the Divar scraptor.
+
+    - When product is provided, it will be used as the search term.
+    - When product is None, it falls back to the global PRODUCT constant
+      to preserve CLI behaviour.
+    """
+    search_term = product or PRODUCT
+
     with sync_playwright() as p:
-        # Launch browser
-        browser = p.firefox.launch(headless=False)
-        
+        # Launch browser in headless mode so it can safely run behind the web UI
+        browser = p.firefox.launch(headless=True)
+
         # Create a new page
         page = browser.new_page()
-        
+
         # Set timeout
         setTimeoutTo(page)
-        
+
         # Search for the product
-        search(PRODUCT, page)
-        
+        search(search_term, page)
+
         # Wait for content to be ready (improved version)
         wait_for_content_ready(page)
 
-        for i in range(10):
+        for _ in range(10):
             page.keyboard.press("PageDown")
-        
-        # Get ads
-        ads = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", PRODUCT)
 
+        # Get ads (JSON string) and parse to Python object
+        ads_json = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", search_term)
+        try:
+            ads = json.loads(ads_json)
+        except Exception:
+            # Fallback: keep raw response if it wasn't valid JSON
+            ads = ads_json
 
-        # ads = getCheapestAdd(gottenAds, PRODUCT)
-
-
-
-
-        
         # Save to JSON - FIXED PATH
         # Get current script directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -54,14 +66,16 @@ def run():
         # Create json directory path
         json_dir = os.path.join(project_root, "json")
         json_path = os.path.join(json_dir, "divar.json")
-        
+
         os.makedirs(json_dir, exist_ok=True)
-        
+
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(ads, f, indent=4, ensure_ascii=False)
-        
-        print(f"Saved {len(ads)} ads to {json_path}")
-        
+
+        # Try to log a meaningful count
+        count = len(ads) if isinstance(ads, list) else 1
+        print(f"Saved {count} ads to {json_path}")
+
         time.sleep(2)
         browser.close()
 

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Search{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+{% endblock %}
+
+{% block content %}
+  <div class="search-results-page">
+    <h2 class="search-title">نتایج برای: <span>{{ search_query }}</span></h2>
+
+    {% if error %}
+      <p class="search-error">{{ error }}</p>
+    {% endif %}
+
+    <h3 class="search-subtitle">JSON نتایج:</h3>
+    <pre class="results-json">{{ results_json }}</pre>
+  </div>
+{% endblock %}

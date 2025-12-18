@@ -9,16 +9,21 @@ import time
 import os
 import json 
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from PROD import PRODUCT
+
+# Make sure project root (src) is on sys.path so absolute imports work from anywhere
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+
+from scraptor.PROD import PRODUCT
 
 
 
-# moduals:
-from unsetProxy import unsetProxy
-from search import search
-from cleanAds import getAds
-from setTimeout import setTimeoutTo
+# modules:
+from scraptor.unsetProxy import unsetProxy
+from scraptor.torob.search import search
+from scraptor.torob.cleanAds import getAds
+from scraptor.setTimeout import setTimeoutTo
 
 
 
@@ -27,50 +32,52 @@ run = True
 
 
 if run:
-    def run():
+    def run(product: str | None = None):
+        """
+        Run the Torob scraptor.
+
+        - When product is provided, it will be used as the search term.
+        - When product is None, it falls back to the global PRODUCT constant.
+        """
+        search_term = product or PRODUCT
+
         unsetProxy(log=False)
         with sync_playwright() as p:
-            # Launch browser
+            # Launch browser in headless mode for web usage
             browser = p.firefox.launch(
-                headless=False,
+                headless=True,
                 # proxy={"server": "direct://"},
                 # args=["--no-proxy-server"]
             )
-            
+
             # Create a new page
             page = browser.new_page()
 
             setTimeoutTo(page)
 
-            page.set_default_timeout(60000) 
-
+            page.set_default_timeout(60000)
 
             page.goto("https://torob.com")
 
+            search(page, search_term, onlyStocks=True)
 
-            search(page, PRODUCT, onlyStocks=True)
+            gottenads = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", search_term)
 
-            # page2 = browser.new_page()
-            gottenads = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", PRODUCT)
-
-            
-
-
-            
-            # time.sleep(200)
             browser.close()
-            # print(gottenads)
 
-
-            json_path = "json/torob.json"
-            os.makedirs(os.path.dirname(json_path), exist_ok=True)
+            # Resolve json/ path relative to project root (same as Divar)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(script_dir))
+            json_dir = os.path.join(project_root, "json")
+            json_path = os.path.join(json_dir, "torob.json")
+            os.makedirs(json_dir, exist_ok=True)
 
             gottenads = json.loads(gottenads)
 
-            with open(json_path, "a") as f:
-                f.truncate(0)
+            with open(json_path, "w", encoding="utf-8") as f:
                 json.dump(gottenads, f, indent=4, ensure_ascii=False)
-            
+
+            print(f"Saved {len(gottenads)} ads to {json_path}")
 
             pass
 if run:

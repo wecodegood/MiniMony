@@ -7,13 +7,74 @@
 {% endblock %}
 
 
-<!-- ----------------------------- -->
-
-
 {% block content %}
     <div class="centerDivHV">
-        <form action="" method="post" class="formToSatisfyStallin">
-            <input type="text" placeholder="نام کالا را وارد کنید">
+        <form
+          action="{{ url_for('search') }}"
+          method="post"
+          class="circle-input-form"
+          id="searchForm"
+        >
+            <div class="circle-input-wrapper" id="circleInputWrapper">
+                <p class="circle-input-label">نام کالا را وارد کنید</p>
+                <div class="circle-input-core">
+                    <input
+                        type="text"
+                        name="q"
+                        class="circle-input-field"
+                        autocomplete="off"
+                    />
+                    <span class="circle-input-inner"></span>
+                </div>
+            </div>
         </form>
     </div>
+
+    <!-- Simple full-screen loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">در حال جست‌وجو در فروشگاه‌ها...</p>
+    </div>
+
+    <script>
+        (function () {
+            const wrapper = document.getElementById('circleInputWrapper');
+            if (!wrapper) return;
+
+            const core = wrapper.querySelector('.circle-input-core');
+            const input = wrapper.querySelector('.circle-input-field');
+            const form = document.getElementById('searchForm');
+            const overlay = document.getElementById('loadingOverlay');
+
+            function expand() {
+                if (!wrapper.classList.contains('expanded')) {
+                    wrapper.classList.add('expanded');
+                    input.focus();
+                }
+            }
+
+            core.addEventListener('click', expand);
+            input.addEventListener('focus', expand);
+
+            input.addEventListener('blur', function () {
+                if (!input.value.trim()) {
+                    wrapper.classList.remove('expanded');
+                }
+            });
+
+            form.addEventListener('submit', function () {
+                if (overlay) {
+                    overlay.style.display = 'flex';
+                }
+            });
+
+            // Submit on Enter when user types
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    form.submit();
+                }
+            });
+        })();
+    </script>
 {% endblock %}

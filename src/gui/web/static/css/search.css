@@ -1,0 +1,51 @@
+.search-results-page {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 14px 45px rgba(0, 0, 0, 0.18),
+    0 10px 18px rgba(0, 0, 0, 0.18);
+}
+
+.search-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #111827;
+}
+
+.search-title span {
+  color: #1f2937;
+}
+
+.search-subtitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 12px 0;
+  color: #374151;
+}
+
+.search-error {
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.results-json {
+  max-height: 480px;
+  overflow: auto;
+  background: #111827;
+  color: #e5e7eb;
+  padding: 16px;
+  border-radius: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+

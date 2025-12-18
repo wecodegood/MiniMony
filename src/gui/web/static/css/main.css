@@ -18,6 +18,40 @@ body {
     align-items: center; /* This centers content horizontally */
 }
 
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    color: #f9fafb;
+    backdrop-filter: blur(4px);
+}
+
+.loading-spinner {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 5px solid rgba(209, 213, 219, 0.7);
+    border-top-color: #1f2937;
+    animation: spinner-rotate 0.9s linear infinite;
+    margin-bottom: 12px;
+}
+
+.loading-text {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+@keyframes spinner-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -40,11 +74,13 @@ body {
     text-align: left; /* Reset text alignment */
     user-select: none;
     transition: all 0.3s ease;
+    letter-spacing: 0.5px;
 }
 
 
 .logo:hover {
-    transform: translateY(2px);
+    /* transform: translateY(2px); */
+    letter-spacing: 1px;
 }
 
 /* Navigation buttons */
@@ -65,20 +101,20 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center; /* Center text inside button */
-    letter-spacing: 1px;
+    /* letter-spacing: 1px; */
 }
 
 .nav-btn:hover {
     background-color: #D2DCB6;
-    color: black;
-    /* font-size: 20px; */
-    letter-spacing: 5px;
-    /* font-weight: bolder; */
-    border-color: black;
+    color: #111827;
+    border-color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.6), 0 10px 18px rgba(0, 0, 0, 0.35);
 }
 
 .nav-btn:active {
-    transform: translateY(5px);
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.25);
 }
 
 /* Reset text alignment for other elements if needed */
