@@ -25,7 +25,7 @@ def index():
 
 @app.route("/search", methods=["POST"])
 def search():
-    query = request.form.get("q", "").strip()
+    query = request.form.get("q", "").strip() # q is the name of the varable that we keep the search name inside it  
 
     # Base JSON directory (shared output of all scraptors)
     json_dir = os.path.join(BASE_DIR, "json")

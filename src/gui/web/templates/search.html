@@ -10,11 +10,6 @@
   <div class="search-results-page">
     <h2 class="search-title">نتایج برای: <span>{{ search_query }}</span></h2>
 
-    <p class="search-json-count">
-      تعداد فایل‌های JSON موجود در پوشه <code>json/</code>:
-      <strong>{{ json_count }}</strong>
-    </p>
-
     {% if error %}
       <p class="search-error">{{ error }}</p>
     {% endif %}
@@ -67,9 +62,6 @@
         {% endfor %}
       </div>
     {% endif %}
-
-    <h3 class="search-subtitle">JSON نتایج (نمایش خام):</h3>
-    <pre class="results-json">{{ results_json }}</pre>
   </div>
 
   <script>
