@@ -45,10 +45,18 @@
                   </p>
                 {% endif %}
 
+
                 <div class="result-meta">
                   <span class="result-source">
-                    منبع: {{ 'دیوار' if card.source == 'divar' else 'توروب' if card.source == 'torob' else card.source }}
+                    {% if card.source == 'divar' %}
+                      <img src="{{ url_for('static', filename='img/divar.svg') }}" alt="Divar" style="height:20px;">
+                    {% elif card.source == 'torob' %}
+                      <img src="{{ url_for('static', filename='img/torob_logo.svg') }}" alt="Torob" style="height:20px;">
+                    {% else %}
+                      {{ card.source }}
+                    {% endif %}
                   </span>
+
 
                   {% if card.link %}
                     <a href="{{ card.link }}" target="_blank" rel="noopener" class="result-link-btn">
