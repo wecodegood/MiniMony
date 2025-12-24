@@ -22,7 +22,6 @@ app = Flask(__name__)
 def home():
     return render_template("index.html")
 
-
 @app.route("/search", methods=["POST"])
 def search():
     query = request.form.get("q", "").strip() # q is the name of the varable that we keep the search name inside it  
