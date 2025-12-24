@@ -1,1 +1,1 @@
-PRODUCT = "Dell precision 5540"
+PRODUCT = "poco x3 pro"

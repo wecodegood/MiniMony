@@ -18,13 +18,17 @@ from scraptor.torob import torobScraptor
 app = Flask(__name__)
 
 
+
+# :)
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
 @app.route("/search", methods=["POST"])
-def search():
-    query = request.form.get("q", "").strip() # q is the name of the varable that we keep the search name inside it  
+@app.route("/search", methods=["POST"])
+def search(realRun=False):
+    query = request.form.get("q", "").strip()  # always get query
 
     # Base JSON directory (shared output of all scraptors)
     json_dir = os.path.join(BASE_DIR, "json")
@@ -46,24 +50,46 @@ def search():
             error="هیچ کالایی وارد نشده است.",
         )
 
-    # Run scraptors headlessly for this query
-    divarScraptor.run(query)
-    torobScraptor.run(query)
+    if realRun:
+        # Run scraptors headlessly for this query
+        divarScraptor.run(query)
+        torobScraptor.run(query)
 
-    # Read results from the shared json directory
-    sources = ["divar", "torob"]
-    results = {}
+        # Read results from the shared json directory
+        sources = ["divar", "torob"]
+        results = {}
 
-    for source in sources:
-        path = os.path.join(json_dir, f"{source}.json")
-        if os.path.exists(path):
-            try:
-                with open(path, "r", encoding="utf-8") as f:
-                    results[source] = json.load(f)
-            except Exception:
+        for source in sources:
+            path = os.path.join(json_dir, f"{source}.json")
+            if os.path.exists(path):
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        results[source] = json.load(f)
+                except Exception:
+                    results[source] = []
+            else:
                 results[source] = []
-        else:
-            results[source] = []
+
+    else:
+        # MOCK / QUICK LOAD MODE
+        results = {
+            "divar": [
+                {
+                    "name": "Test Product A",
+                    "price": 123000,
+                    "link": "/p/test-a",
+                    "image": "https://via.placeholder.com/150"
+                }
+            ],
+            "torob": [
+                {
+                    "name": "Test Product B",
+                    "price": 456000,
+                    "link": "/p/test-b",
+                    "image": "https://via.placeholder.com/150"
+                }
+            ]
+        }
 
     # Build a unified list of cards for the template
     cards = []

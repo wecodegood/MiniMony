@@ -122,6 +122,10 @@ def _extract_best_product_from_html(
                 " ".join(price_el.get_text(strip=True).split())
             )
 
+        # Skip items without price
+        if price is None:
+            continue
+
         img_el = anchor.select_one("img")
         image_url = img_el.get("src") if img_el else ""
 
@@ -136,7 +140,7 @@ def _extract_best_product_from_html(
 
     if not candidates:
         return json.dumps(
-            {"error": "no products found"},
+            {"error": "no products with price found"},
             ensure_ascii=False,
             indent=4,
         )
@@ -196,6 +200,7 @@ def _extract_best_product_from_html(
     best.pop("score", None)
 
     return json.dumps(best, ensure_ascii=False, indent=4)
+
 
 
 # =========================
