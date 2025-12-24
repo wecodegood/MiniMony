@@ -37,7 +37,7 @@ def run(product: str | None = None):
         page.set_default_timeout(60000)
         page.goto("https://torob.com")
         search(page, search_term, onlyStocks=True)
-        gottenads = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", search_term)
+        gottenads = getAds(page, 20, search_term)
         browser.close()
 
     # Save ads to JSON relative to project root

@@ -1,177 +1,196 @@
 import json
 import re
 import asyncio
-from typing import Dict, Any
-from playwright.async_api import async_playwright, Page
+from typing import Dict, Any, List
+from playwright.async_api import async_playwright
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
-async def getCheapestAdd(
-    url: str, 
-    target_product: str,
-    headless: bool = True
-) -> Dict[str, Any]:
-    """
-    Extract the cheapest product from Divar using Playwright.
-    
-    Args:
-        url: The Divar search URL (e.g., search results page)
-        target_product: The product name to search for (e.g., "Poco x3 pro")
-        headless: Run browser in headless mode (faster, no GUI)
-        
-    Returns:
-        JSON dictionary with name, price, link, and image of cheapest valid product
-    """
-    # Persian to Western numeral mapping
-    persian_to_english = {
-        '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
-        '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
-        '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-        '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+# =========================
+# NLP MODEL (ONCE)
+# =========================
+_MODEL = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+
+# =========================
+# TEXT NORMALIZATION
+# =========================
+def _normalize(text: str) -> str:
+    if not text:
+        return ""
+    text = text.lower()
+    text = re.sub(r"[^\w\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+# =========================
+# STRONG TOKENS
+# =========================
+def _strong_tokens(text: str) -> set[str]:
+    tokens = _normalize(text).split()
+    out = set()
+    for t in tokens:
+        if any(ch.isdigit() for ch in t):
+            out.add(t)
+        elif len(t) >= 2:  # include short tokens for soft match
+            out.add(t)
+    return out
+
+# =========================
+# BRAND+MODEL CHECK (SOFTER)
+# =========================
+def _has_brand_model_soft(query: str, candidate: str) -> bool:
+    q = _normalize(query)
+    c = _normalize(candidate)
+
+    q_tokens = q.split()
+    brand_tokens = [t for t in q_tokens if not any(ch.isdigit() for ch in t)]
+    model_tokens = [t for t in q_tokens if any(ch.isdigit() for ch in t)]
+
+    brand_present = any(bt in c for bt in brand_tokens)
+    model_present = any(mt in c for mt in model_tokens)
+
+    # Soft: accept if either brand or model present
+    return brand_present or model_present
+
+# =========================
+# SEMANTIC SIMILARITY
+# =========================
+def _semantic_similarity(a: str, b: str) -> float:
+    vecs = _MODEL.encode([_normalize(a), _normalize(b)])
+    return float(cosine_similarity([vecs[0]], [vecs[1]])[0][0])
+
+# =========================
+# TOKEN PENALTY
+# =========================
+def _token_penalty(query: str, candidate: str) -> float:
+    q_tokens = _strong_tokens(query)
+    c_text = _normalize(candidate)
+    if not q_tokens:
+        return 0.0
+    missing = sum(1 for t in q_tokens if t not in c_text)
+    return missing / len(q_tokens)
+
+# =========================
+# PRICE PARSER (PERSIAN)
+# =========================
+def _extract_price(text: str) -> int | None:
+    if not text:
+        return None
+    persian_map = {
+        '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4',
+        '۵':'5','۶':'6','۷':'7','۸':'8','۹':'9',
+        '٠':'0','١':'1','٢':'2','٣':'3','٤':'4',
+        '٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'
     }
-    
-    # Normalize target product for comparison
-    target_normalized = target_product.lower().strip()
-    
-    valid_products = []
-    
+    digits = ""
+    for ch in text:
+        if ch in persian_map:
+            digits += persian_map[ch]
+        elif ch.isdigit():
+            digits += ch
+    try:
+        return int(digits) if digits else None
+    except ValueError:
+        return None
+
+# =========================
+# GET CHEAPEST AD (SOFTER + FALLBACK)
+# =========================
+async def getCheapestAdd(url: str, target_product: str, headless: bool = True) -> Dict[str, Any]:
+    products: List[Dict[str, Any]] = []
+
     async with async_playwright() as p:
-        # Launch browser (Chromium is recommended for stability)[citation:4]
-        browser = await p.chromium.launch(headless=headless)
-        
-        # Create browser context with realistic viewport[citation:4]
+        browser = await p.firefox.launch(headless=headless)
         context = await browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            user_agent="Mozilla/5.0"
         )
-        
         page = await context.new_page()
-        
         try:
-            # Navigate to the URL and wait for content[citation:1][citation:4]
             await page.goto(url, wait_until="networkidle")
-            
-            # Wait for product cards to load
             await page.wait_for_selector('a.kt-post-card__action', timeout=10000)
-            
-            # Extract all product cards using Playwright's locators[citation:1]
-            product_cards = await page.locator('a.kt-post-card__action').all()
-            
-            for card in product_cards:
+            cards = await page.locator('a.kt-post-card__action').all()
+
+            for card in cards:
                 try:
-                    # Extract product name
-                    title_elem = await card.locator('h2.kt-post-card__title').first
-                    if not title_elem:
+                    title_el = card.locator('h2.kt-post-card__title')
+                    if await title_el.count() == 0:
                         continue
-                    
-                    product_name = (await title_elem.inner_text()).strip()
-                    
-                    # Normalize product name for comparison
-                    product_normalized = product_name.lower()
-                    
-                    # Check if this is the target product
-                    if target_normalized in product_normalized or product_normalized in target_normalized:
-                        is_target_product = True
-                    else:
-                        # Check for variations (remove spaces, special chars)
-                        product_no_spaces = re.sub(r'[\s\-_]', '', product_normalized)
-                        target_no_spaces = re.sub(r'[\s\-_]', '', target_normalized)
-                        is_target_product = target_no_spaces in product_no_spaces or product_no_spaces in target_no_spaces
-                    
-                    if not is_target_product:
-                        continue
-                    
-                    # Extract price using $$eval approach[citation:3]
-                    price_text = None
-                    description_elems = await card.locator('div.kt-post-card__description').all()
-                    
-                    for elem in description_elems:
-                        text = (await elem.inner_text()).strip()
-                        if 'تومان' in text or any(char.isdigit() for char in text):
-                            price_text = text
+                    title = (await title_el.first.inner_text()).strip()
+                    descs = await card.locator('div.kt-post-card__description').all()
+
+                    price = None
+                    for d in descs:
+                        txt = await d.inner_text()
+                        price = _extract_price(txt)
+                        if price:
                             break
-                    
-                    if not price_text:
-                        continue
-                    
-                    # Extract only numeric parts and convert Persian numbers
-                    price_digits = ''
-                    for char in price_text:
-                        if char in persian_to_english:
-                            price_digits += persian_to_english[char]
-                        elif char.isdigit():
-                            price_digits += char
-                    
-                    if not price_digits:
-                        continue
-                    
-                    try:
-                        price = int(price_digits)
-                    except ValueError:
-                        continue
-                    
-                    # Extract link
+
                     link = await card.get_attribute('href')
-                    if link and not link.startswith('http'):
-                        link = f"https://divar.ir{link}"
-                    
-                    # Extract image
-                    img_elem = await card.locator('img').first
-                    image_url = ""
-                    if img_elem:
-                        # Try data-src first (lazy loaded), then src
-                        image_url = await img_elem.get_attribute('data-src') or await img_elem.get_attribute('src') or ""
-                    
-                    valid_products.append({
-                        'name': product_name,
-                        'price': price,
-                        'link': link or "",
-                        'image': image_url
+                    if link and not link.startswith("http"):
+                        link = "https://divar.ir" + link
+
+                    img_el = card.locator("img")
+                    image = ""
+                    if await img_el.count() > 0:
+                        image = (await img_el.first.get_attribute("data-src")
+                                 or await img_el.first.get_attribute("src") or "")
+
+                    products.append({
+                        "name": title,
+                        "price": price,
+                        "link": link or "",
+                        "image": image
                     })
-                    
                 except Exception:
-                    continue  # Skip this product if any error occurs
-            
-        except Exception as e:
-            print(f"Error during scraping: {e}")
-            return {
-                "name": "",
-                "price": 0,
-                "link": "",
-                "image": "",
-                "error": str(e)
-            }
+                    continue
         finally:
             await browser.close()
-    
-    # If no valid products found
-    if not valid_products:
-        return {
-            "name": "",
-            "price": 0,
-            "link": "",
-            "image": ""
-        }
-    
-    # Find cheapest product
-    cheapest = min(valid_products, key=lambda x: x['price'])
-    
-    return cheapest
 
-# Synchronous wrapper for easier use
-def extract_cheapest_product_playwright(url: str, target_product: str, headless: bool = True) -> Dict[str, Any]:
-    """
-    Synchronous wrapper for the async Playwright scraper.
-    """
-    return asyncio.run(extract_cheapest_product_with_playwright(url, target_product, headless))
+    # Phase 1: Soft brand+model filter
+    filtered = [p for p in products if _has_brand_model_soft(target_product, p["name"])]
+    if not filtered:
+        filtered = products  # fallback to all
 
-# Example usage
-if __name__ == "__main__":
-    # Example URL - you would use the actual Divar search URL
-    divar_url = "https://divar.ir/s/tehran/mobile-phones?q=poco+x3+pro"
-    
-    result = extract_cheapest_product_playwright(
-        url=divar_url,
-        target_product="Poco x3 pro",
-        headless=True  # Set to False to see the browser
+    # Phase 2: NLP scoring
+    scored = []
+    for p in filtered:
+        semantic = _semantic_similarity(target_product, p["name"])
+        penalty = _token_penalty(target_product, p["name"])
+        score = semantic - (penalty * 0.2)
+        scored.append({**p, "score": score})
+
+    # Phase 3: If nothing scored well, fallback to max semantic similarity only
+    if not scored:
+        fallback = [
+            {**p, "score": _semantic_similarity(target_product, p["name"])}
+            for p in products
+        ]
+        if fallback:
+            best = max(fallback, key=lambda x: x["score"])
+            best.pop("score", None)
+            return best
+        else:
+            return {"error": "no products found even in fallback", "mode": "soft"}
+
+    # Phase 4: Choose best by score then cheapest
+    best = min(
+        scored,
+        key=lambda x: (-(x["score"]), x["price"] if x["price"] is not None else float("inf"))
     )
-    
+    best.pop("score", None)
+    return best
+
+# =========================
+# SYNC WRAPPER
+# =========================
+def extract_cheapest_product_playwright(url: str, target_product: str, headless: bool = True) -> Dict[str, Any]:
+    return asyncio.run(getCheapestAdd(url, target_product, headless))
+
+# =========================
+# EXAMPLE USAGE
+# =========================
+if __name__ == "__main__":
+    url = "https://divar.ir/s/tehran/mobile-phones?q=iphone+16+pro"
+    result = extract_cheapest_product_playwright(url, "iPhone 16 Pro", headless=True)
     print(json.dumps(result, ensure_ascii=False, indent=2))
