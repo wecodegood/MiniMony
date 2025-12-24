@@ -4,6 +4,7 @@ import importlib.util
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
 import math
+import time
 
 def get_scraptor_files():
     """Find all scraptor files in scraptor/subfolders"""
@@ -26,7 +27,7 @@ def get_scraptor_files():
                     'path': target_path,
                     'module_path': os.path.dirname(target_path)
                 })
-
+    
     return scraptor_files
 
 def load_and_run_scraptor(scraptor_info):
@@ -109,6 +110,8 @@ def run_scraptor_group(scraptor_group):
     return all(results)
 
 if __name__ == "__main__":
+    start = time.perf_counter()
+
     scraptor_files = get_scraptor_files()
     
     if not scraptor_files:
@@ -125,5 +128,10 @@ if __name__ == "__main__":
         print(f"  - {scraptor['name']}")
     
     run_parallel(scraptor_files)
-    
+    end = time.perf_counter()
+
+    elp = end - start 
+
     print("All scraptors completed.")
+    # print the time here
+    print(f"{int(elp)} second untill getting the hole ads")
