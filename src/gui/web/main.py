@@ -27,7 +27,7 @@ def home():
 
 @app.route("/search", methods=["POST"])
 @app.route("/search", methods=["POST"])
-def search(realRun=False):
+def search(realRun=True):
     query = request.form.get("q", "").strip()  # always get query
 
     # Base JSON directory (shared output of all scraptors)
