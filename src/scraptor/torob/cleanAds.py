@@ -126,8 +126,73 @@ def _extract_best_product_from_html(
         if price is None:
             continue
 
-        img_el = anchor.select_one("img")
-        image_url = img_el.get("src") if img_el else ""
+        # Robust image extraction: prefer product <picture> images, slider images,
+        # then fall back to any non-placeholder <img> or data-* attributes.
+        def _normalize_url(url: str) -> str:
+            if not url:
+                return ""
+            url = url.strip().strip('"\'')
+            if url.startswith("//"):
+                return "https:" + url
+            if url.startswith("/"):
+                return "https://torob.com" + url
+            return url
+
+        def _extract_image_from_anchor(a):
+            if not a:
+                return ""
+            # Prefer explicit product picture images
+            pic_img = a.select_one("picture img[src]")
+            if pic_img:
+                val = pic_img.get("src") or pic_img.get("srcset")
+                if val and "camera.svg" not in val:
+                    if "," in val:
+                        first = [p.strip() for p in val.split(',') if p.strip()][0].split()[0]
+                        return _normalize_url(first)
+                    return _normalize_url(val)
+
+            # Try picture -> source
+            pic = a.select_one("picture")
+            if pic:
+                for source in pic.select("source"):
+                    for attr in ("srcset", "data-srcset", "data-src", "src"):
+                        val = source.get(attr)
+                        if val and "camera.svg" not in val:
+                            parts = [p.strip() for p in val.split(',') if p.strip()]
+                            first = parts[0].split()[0] if parts else val
+                            return _normalize_url(first)
+
+            # Images inside slider slides
+            slide_img = a.select_one(".ProductImageSlider_slide__kN_Ed img[src]")
+            if slide_img:
+                val = slide_img.get("src") or slide_img.get("srcset")
+                if val and "camera.svg" not in val:
+                    if "," in val:
+                        first = [p.strip() for p in val.split(',') if p.strip()][0].split()[0]
+                        return _normalize_url(first)
+                    return _normalize_url(val)
+
+            # Fallback: first non-placeholder img attribute
+            for img in a.select("img"):
+                for attr in ("src", "data-src", "data-lazy-src", "data-original", "data-srcset", "srcset"):
+                    val = img.get(attr)
+                    if val and "camera.svg" not in val:
+                        if attr == "srcset":
+                            parts = [p.strip() for p in val.split(',') if p.strip()]
+                            if parts:
+                                first = parts[0].split()[0]
+                                return _normalize_url(first)
+                        return _normalize_url(val)
+
+            # data-* attributes on anchor
+            for attr in ("data-image", "data-bg", "data-src", "data-original", "data-echo"):
+                candidate = a.get(attr)
+                if candidate and "camera.svg" not in candidate:
+                    return _normalize_url(candidate)
+
+            return ""
+
+        image_url = _extract_image_from_anchor(anchor)
 
         candidates.append(
             {

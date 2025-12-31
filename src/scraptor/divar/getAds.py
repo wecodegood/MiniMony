@@ -44,9 +44,59 @@ def _extract_relevant_products(all_cards_html: str, target_product: str) -> list
         if price is None:
             continue
 
-        # Image
-        img_el = article.select_one("img[src*='divarcdn.com']")
-        image_url = img_el.get("src") if img_el else ""
+        # Robust image extraction: prefer <picture> images, then img with divarcdn, then data-* attrs
+        def _normalize_url(url: str) -> str:
+            if not url:
+                return ""
+            url = url.strip().strip('"\'')
+            if url.startswith("//"):
+                return "https:" + url
+            if url.startswith("/"):
+                return "https://divar.ir" + url
+            return url
+
+        def _extract_image(el):
+            if not el:
+                return ""
+            # picture > img
+            pic_img = el.select_one("picture img[src]")
+            if pic_img:
+                val = pic_img.get("src") or pic_img.get("srcset")
+                if val:
+                    if "," in val:
+                        first = [p.strip() for p in val.split(',') if p.strip()][0].split()[0]
+                        return _normalize_url(first)
+                    return _normalize_url(val)
+
+            # img with divarcdn
+            img_el = el.select_one("img[src*='divarcdn.com']")
+            if img_el:
+                val = img_el.get("src") or img_el.get("data-src") or img_el.get("srcset")
+                if val:
+                    if "," in val:
+                        first = [p.strip() for p in val.split(',') if p.strip()][0].split()[0]
+                        return _normalize_url(first)
+                    return _normalize_url(val)
+
+            # any slide img
+            slide_img = el.select_one(".kt-post-card__photo img[src]")
+            if slide_img:
+                val = slide_img.get("src") or slide_img.get("data-src") or slide_img.get("srcset")
+                if val:
+                    if "," in val:
+                        first = [p.strip() for p in val.split(',') if p.strip()][0].split()[0]
+                        return _normalize_url(first)
+                    return _normalize_url(val)
+
+            # data-* attributes
+            for attr in ("data-image", "data-src", "data-bg", "data-original"):
+                candidate = el.get(attr)
+                if candidate:
+                    return _normalize_url(candidate)
+
+            return ""
+
+        image_url = _extract_image(article)
 
         # Simple relevance check
         if target_product.lower() in name.lower():

@@ -11,8 +11,21 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
-from scraptor.divar import divarScraptor
-from scraptor.torob import torobScraptor
+import importlib.util
+
+# Import the central scraptor runner by file path to avoid a circular
+# import when this file is executed as a script (it is also named main.py).
+try:
+    main_path = os.path.join(BASE_DIR, "main.py")
+    spec = importlib.util.spec_from_file_location("mm_main", main_path)
+    mm_main = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mm_main)
+    run_scraptors = getattr(mm_main, "run_scraptors")
+except Exception as e:
+    # Fall back to a noop runner so the web UI can still start for templating
+    print(f"Warning: could not import run_scraptors: {e}")
+    def run_scraptors(product=None, parallel=True):
+        print("run_scraptors unavailable")
 
 
 app = Flask(__name__)
@@ -27,7 +40,7 @@ def home():
 
 @app.route("/search", methods=["POST"])
 @app.route("/search", methods=["POST"])
-def search(realRun=False):
+def search(realRun=True):
     query = request.form.get("q", "").strip()  # always get query
 
     # Base JSON directory (shared output of all scraptors)
@@ -51,24 +64,40 @@ def search(realRun=False):
         )
 
     if realRun:
-        # Run scraptors headlessly for this query
-        divarScraptor.run(query)
-        torobScraptor.run(query)
+        # Run all scraptors via central runner (may run in parallel) and
+        # receive results directly (no intermediate JSON files).
+        try:
+            # When called from the Flask request context, running scraptors
+            # in a process pool can fail (Playwright / multiprocessing issues).
+            # Run sequentially here for reliability and faster visible feedback.
+            results = run_scraptors(product=query, parallel=False) or {}
+            print(f"run_scraptors returned keys: {list(results.keys())}")
+        except Exception as e:
+            print(f"Error running scraptors: {e}")
+            import traceback
+            traceback.print_exc()
+            results = {}
 
-        # Read results from the shared json directory
-        sources = ["divar", "torob"]
-        results = {}
-
-        for source in sources:
-            path = os.path.join(json_dir, f"{source}.json")
-            if os.path.exists(path):
-                try:
-                    with open(path, "r", encoding="utf-8") as f:
-                        results[source] = json.load(f)
-                except Exception:
-                    results[source] = []
-            else:
-                results[source] = []
+        # If scraptors didn't yield results (common in restricted/container
+        # environments where Playwright can't run), try to load previously
+        # saved JSON outputs from the `json/` folder. This provides quicker
+        # visible feedback without launching browsers during the request.
+        if not results:
+            try:
+                for name in os.listdir(json_dir):
+                    if not name.lower().endswith('.json'):
+                        continue
+                    src_name = os.path.splitext(name)[0]
+                    path = os.path.join(json_dir, name)
+                    try:
+                        with open(path, 'r', encoding='utf-8') as fh:
+                            data = json.load(fh)
+                        results[src_name] = data
+                        print(f"Loaded fallback data from {path}")
+                    except Exception as e:
+                        print(f"Failed loading JSON {path}: {e}")
+            except Exception as e:
+                print(f"Error listing json dir {json_dir}: {e}")
 
     else:
         # MOCK / QUICK LOAD MODE
@@ -91,6 +120,15 @@ def search(realRun=False):
             ]
         }
 
+    # Final fallback: if we still have no results, show a small mock result
+    # so the UI displays something useful instead of an empty page.
+    if not results:
+        results = {
+            "mock": [
+                {"name": f"نتیجه نمونه برای '{query}'", "price": None, "link": "", "image": ""}
+            ]
+        }
+
     # Build a unified list of cards for the template
     cards = []
     base_urls = {
@@ -100,6 +138,10 @@ def search(realRun=False):
 
     for source, data in results.items():
         if isinstance(data, dict):
+            # Skip obvious error / no-result dicts returned by some scraptors
+            if data.get("error") and len(data.keys()) <= 3:
+                print(f"Skipping {source} (error response): {data}")
+                continue
             items = [data]
         elif isinstance(data, list):
             items = data
@@ -145,6 +187,6 @@ def search(realRun=False):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5123)
 
 
