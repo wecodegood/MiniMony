@@ -64,12 +64,7 @@ def search(realRun=True):
         )
 
     if realRun:
-        # Run all scraptors via central runner (may run in parallel) and
-        # receive results directly (no intermediate JSON files).
         try:
-            # When called from the Flask request context, running scraptors
-            # in a process pool can fail (Playwright / multiprocessing issues).
-            # Run sequentially here for reliability and faster visible feedback.
             results = run_scraptors(product=query, parallel=False) or {}
             print(f"run_scraptors returned keys: {list(results.keys())}")
         except Exception as e:
@@ -78,10 +73,6 @@ def search(realRun=True):
             traceback.print_exc()
             results = {}
 
-        # If scraptors didn't yield results (common in restricted/container
-        # environments where Playwright can't run), try to load previously
-        # saved JSON outputs from the `json/` folder. This provides quicker
-        # visible feedback without launching browsers during the request.
         if not results:
             try:
                 for name in os.listdir(json_dir):
@@ -100,7 +91,6 @@ def search(realRun=True):
                 print(f"Error listing json dir {json_dir}: {e}")
 
     else:
-        # MOCK / QUICK LOAD MODE
         results = {
             "divar": [
                 {
@@ -120,8 +110,6 @@ def search(realRun=True):
             ]
         }
 
-    # Final fallback: if we still have no results, show a small mock result
-    # so the UI displays something useful instead of an empty page.
     if not results:
         results = {
             "mock": [
@@ -129,7 +117,6 @@ def search(realRun=True):
             ]
         }
 
-    # Build a unified list of cards for the template
     cards = []
     base_urls = {
         "divar": "https://divar.ir",
@@ -157,7 +144,6 @@ def search(realRun=True):
             link = item.get("link", "")
             image = item.get("image") or ""
 
-            # Build full link if relative
             if isinstance(link, str) and link.startswith("/"):
                 base = base_urls.get(source, "")
                 full_link = (base + link) if base else link
@@ -187,6 +173,4 @@ def search(realRun=True):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5123)
-
-
+    app.run(debug=True)
