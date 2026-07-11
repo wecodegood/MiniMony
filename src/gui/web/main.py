@@ -11,21 +11,37 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
-from scraptor.divar import divarScraptor
-from scraptor.torob import torobScraptor
+import importlib.util
+
+# Import the central scraptor runner by file path to avoid a circular
+# import when this file is executed as a script (it is also named main.py).
+try:
+    main_path = os.path.join(BASE_DIR, "main.py")
+    spec = importlib.util.spec_from_file_location("mm_main", main_path)
+    mm_main = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mm_main)
+    run_scraptors = getattr(mm_main, "run_scraptors")
+except Exception as e:
+    # Fall back to a noop runner so the web UI can still start for templating
+    print(f"Warning: could not import run_scraptors: {e}")
+    def run_scraptors(product=None, parallel=True):
+        print("run_scraptors unavailable")
 
 
 app = Flask(__name__)
 
 
+
+# :)
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
-
 @app.route("/search", methods=["POST"])
-def search():
-    query = request.form.get("q", "").strip() # q is the name of the varable that we keep the search name inside it  
+@app.route("/search", methods=["POST"])
+def search(realRun=True):
+    query = request.form.get("q", "").strip()  # always get query
 
     # Base JSON directory (shared output of all scraptors)
     json_dir = os.path.join(BASE_DIR, "json")
@@ -47,26 +63,60 @@ def search():
             error="هیچ کالایی وارد نشده است.",
         )
 
-    # Run scraptors headlessly for this query
-    divarScraptor.run(query)
-    torobScraptor.run(query)
+    if realRun:
+        try:
+            results = run_scraptors(product=query, parallel=False) or {}
+            print(f"run_scraptors returned keys: {list(results.keys())}")
+        except Exception as e:
+            print(f"Error running scraptors: {e}")
+            import traceback
+            traceback.print_exc()
+            results = {}
 
-    # Read results from the shared json directory
-    sources = ["divar", "torob"]
-    results = {}
-
-    for source in sources:
-        path = os.path.join(json_dir, f"{source}.json")
-        if os.path.exists(path):
+        if not results:
             try:
-                with open(path, "r", encoding="utf-8") as f:
-                    results[source] = json.load(f)
-            except Exception:
-                results[source] = []
-        else:
-            results[source] = []
+                for name in os.listdir(json_dir):
+                    if not name.lower().endswith('.json'):
+                        continue
+                    src_name = os.path.splitext(name)[0]
+                    path = os.path.join(json_dir, name)
+                    try:
+                        with open(path, 'r', encoding='utf-8') as fh:
+                            data = json.load(fh)
+                        results[src_name] = data
+                        print(f"Loaded fallback data from {path}")
+                    except Exception as e:
+                        print(f"Failed loading JSON {path}: {e}")
+            except Exception as e:
+                print(f"Error listing json dir {json_dir}: {e}")
 
-    # Build a unified list of cards for the template
+    else:
+        results = {
+            "divar": [
+                {
+                    "name": "Test Product A",
+                    "price": 123000,
+                    "link": "/p/test-a",
+                    "image": "https://via.placeholder.com/150"
+                }
+            ],
+            "torob": [
+                {
+                    "name": "Test Product B",
+                    "price": 456000,
+                    "link": "/p/test-b",
+                    "image": "https://via.placeholder.com/150"
+                }
+            ]
+        }
+
+    if not results:
+        results = {
+            "mock": [
+                {"name": f"نتیجه نمونه برای '{query}'", "price": None, "link": "", "image": ""}
+            ]
+        }
+
     cards = []
     base_urls = {
         "divar": "https://divar.ir",
@@ -75,6 +125,10 @@ def search():
 
     for source, data in results.items():
         if isinstance(data, dict):
+            # Skip obvious error / no-result dicts returned by some scraptors
+            if data.get("error") and len(data.keys()) <= 3:
+                print(f"Skipping {source} (error response): {data}")
+                continue
             items = [data]
         elif isinstance(data, list):
             items = data
@@ -90,7 +144,6 @@ def search():
             link = item.get("link", "")
             image = item.get("image") or ""
 
-            # Build full link if relative
             if isinstance(link, str) and link.startswith("/"):
                 base = base_urls.get(source, "")
                 full_link = (base + link) if base else link
@@ -121,5 +174,3 @@ def search():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-

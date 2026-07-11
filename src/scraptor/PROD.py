@@ -1,1 +1,1 @@
-PRODUCT = "Poco x3 pro"
+PRODUCT = "poco x3 pro"

@@ -37,7 +37,7 @@ def run(product: str | None = None):
         page.set_default_timeout(60000)
         page.goto("https://torob.com")
         search(page, search_term, onlyStocks=True)
-        gottenads = getAds(page, 20, "your5dad6666@gmail.com", "yasin.11A", search_term)
+        gottenads = getAds(page, 20, search_term)
         browser.close()
 
     # Save ads to JSON relative to project root
@@ -45,11 +45,15 @@ def run(product: str | None = None):
     os.makedirs(json_dir, exist_ok=True)
     json_path = os.path.join(json_dir, "torob.json")
 
-    gottenads = json.loads(gottenads)
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(gottenads, f, indent=4, ensure_ascii=False)
+    # Ensure we return parsed data rather than writing to disk
+    try:
+        gottenads = json.loads(gottenads)
+    except Exception:
+        # If getAds already returned a Python object
+        pass
 
-    print(f"Saved {len(gottenads)} ads to {json_path}")
+    print(f"Scraped {len(gottenads) if isinstance(gottenads, list) else 1} ads from Torob")
+    return gottenads
 
 
 if __name__ == "__main__":

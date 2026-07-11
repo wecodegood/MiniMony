@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run MiniMony (Live Share)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_flask.py",
+      "console": "integratedTerminal"
+    }
+  ]
+}

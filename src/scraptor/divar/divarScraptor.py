@@ -8,7 +8,7 @@ import sys
 import json
 
 # Make sure project root (src) is on sys.path so absolute imports work from anywhere
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
@@ -69,15 +69,15 @@ def run(product: str | None = None):
 
         os.makedirs(json_dir, exist_ok=True)
 
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(ads, f, indent=4, ensure_ascii=False)
-
         # Try to log a meaningful count
         count = len(ads) if isinstance(ads, list) else 1
-        print(f"Saved {count} ads to {json_path}")
+        print(f"Scraped {count} ads from Divar")
 
-        time.sleep(2)
+        time.sleep(1)
         browser.close()
+
+        # Return the ads data (do not write to disk)
+        return ads
 
 
 def wait_for_content_ready(page, timeout=30000):
