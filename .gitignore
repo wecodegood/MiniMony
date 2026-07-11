@@ -1,0 +1,29 @@
+# Python build / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Runtime files
+src/json/*.json
+*.log
+*.sqlite3
+*.db
+
+# Editor metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Generated documents
+*.docx
+
+# OS files
+.DS_Store
