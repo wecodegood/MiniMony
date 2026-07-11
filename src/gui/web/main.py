@@ -13,8 +13,6 @@ if BASE_DIR not in sys.path:
 
 import importlib.util
 
-# Import the central scraptor runner by file path to avoid a circular
-# import when this file is executed as a script (it is also named main.py).
 try:
     main_path = os.path.join(BASE_DIR, "main.py")
     spec = importlib.util.spec_from_file_location("mm_main", main_path)

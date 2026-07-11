@@ -18,10 +18,10 @@
         <h1 class="logo">MiniMony</h1>
       </div>
       <div class="nav-buttons">
-        <button class="nav-btn">Home</button>
-        <button class="nav-btn">About</button>
-        <button class="nav-btn">Search</button>
-        <button class="nav-btn">Contact</button>
+        <button class="nav-btn theme-btn" data-theme="light">Light</button>
+        <button class="nav-btn theme-btn" data-theme="solarized-light">Solarized Light</button>
+        <button class="nav-btn theme-btn" data-theme="dark">Dark</button>
+        <button class="nav-btn theme-btn" data-theme="solarized-dark">Solarized Dark</button>
       </div>
     </nav>
 
@@ -32,6 +32,34 @@
     <div class="supportCircle">
       
     </div>
+
+    <script>
+      // Theme switching
+      document.addEventListener('DOMContentLoaded', function() {
+        const themeButtons = document.querySelectorAll('.theme-btn');
+        const body = document.body;
+
+        // Set default theme
+        if (!body.className || !body.className.startsWith('theme-')) {
+          body.className = 'theme-dark';
+        }
+
+        themeButtons.forEach(btn => {
+          btn.addEventListener('click', function() {
+            const theme = this.getAttribute('data-theme');
+            body.className = `theme-${theme}`;
+            // Save to localStorage
+            localStorage.setItem('theme', theme);
+          });
+        });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+          body.className = `theme-${savedTheme}`;
+        }
+      });
+    </script>
 
   </body>
 </html>
