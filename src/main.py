@@ -8,7 +8,7 @@ import time
 
 def get_scraptor_files():
     """Find all scraptor files in scraptor/subfolders (absolute paths)
-
+    
     This resolves the `scraptor` directory relative to this module file so
     the function works regardless of the current working directory.
     """

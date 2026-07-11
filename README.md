@@ -1,14 +1,40 @@
 # MiniMony
 
-MiniMony is a lightweight price search aggregator for Persian marketplaces. It combines a Flask web interface with browser-based scraping modules to collect and present low-price listings from supported sites.
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-experimental-orange)
 
-## What this project includes
+Tired of opening multiple Persian marketplaces just to compare prices? MiniMony centralizes price search results from Divar, Torob, Digikala, and more into a single local web app.
 
-- `run_flask.py` — helper entry point for running the Flask web app
-- `src/gui/web/main.py` — Flask application and search UI
-- `src/main.py` — scraper runner that discovers and executes marketplace scraper modules
-- `src/scraptor/` — scraper implementations for marketplaces such as Divar, Torob, and Digikala
-- `src/json/` — runtime output directory for scraper JSON results (ignored by git)
+## Quick start
+
+```bash
+git clone https://github.com/wecodegood/MiniMony.git
+cd MiniMony
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+python3 -m playwright install firefox
+python run_flask.py
+```
+
+Open `http://127.0.0.1:5000` in your browser and search for a product.
+
+## What MiniMony does
+
+- Aggregates listings from multiple Persian marketplaces
+- Uses browser automation to scrape search results
+- Shows combined results in a clean local UI
+- Keeps the testing setup simple and self-contained
+
+## Features
+
+- Flask web app for search and result display
+- Marketplace scraper orchestration in `src/main.py`
+- Playwright-powered scraping modules under `src/scraptor/`
+- JSON result caching under `src/json/`
+- Easy extendability for new marketplaces
 
 ## Requirements
 
@@ -32,29 +58,52 @@ python3 -m playwright install firefox
 python run_flask.py
 ```
 
-Then open `http://127.0.0.1:5000` in your browser.
-
-## Run scrapers directly
+## Run scrapers manually
 
 ```bash
 python src/main.py
 ```
 
-This will discover scraper modules under `src/scraptor/` and execute them.
+This discovers scrapers under `src/scraptor/` and runs each available module.
 
-## Notes
+## Example workflow
 
-- Generated runtime artifacts such as `src/json/*.json` and `*.pyc` files are ignored by git.
-- If a scraper fails, the web UI may fall back to cached or mock results.
-- Use the `requirements.txt` file to install dependencies in a clean environment.
+1. Start the web app with `python run_flask.py`
+2. Open `http://127.0.0.1:5000`
+3. Enter a search query such as `گوشی` or `laptop`
+4. Browse results from supported marketplaces
 
 ## Project structure
 
-- `src/gui/web/` — Flask templates, static assets, and web app logic
+- `run_flask.py` — helper script for launching the Flask app
+- `src/gui/web/main.py` — Flask application and search views
+- `src/main.py` — scraper discovery and execution logic
 - `src/scraptor/` — marketplace scraper modules
-- `src/main.py` — scraper orchestration and parallel runner
+- `src/json/` — runtime output directory (ignored by git)
 - `README_LIVE_SHARE.md` — Live Share helper instructions
 
-## Cleanup
+## Notes
 
-This repository now excludes generated artifacts and keeps the source code and documentation ready for use.
+- `src/json/` is ignored by git because it contains generated output files.
+- Marketplace scraping can break when site layouts change, so updates may be required over time.
+- The app includes fallback behavior when scrapers cannot return fresh data.
+
+## Troubleshooting
+
+- Confirm `playwright` is installed and browser components are installed:
+  `python3 -m playwright install firefox`
+- Run from the repository root to avoid path issues
+- Review terminal logs if a scraper fails or search returns no results
+
+## Contributing
+
+1. Fork the repository
+2. Create a new branch
+3. Open a pull request with a clear summary
+
+If you find a marketplace scraper failure, please open an issue with the affected marketplace and search term.
+
+## License
+
+This project is licensed under the MIT License.
+
